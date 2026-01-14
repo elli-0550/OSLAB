@@ -1,36 +1,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
-    int bt[20], wt[20], tat[20], i, n;
-    float wtavg = 0.0f, tatavg = 0.0f;
-
+int main()
+{
+    int bt[20], wt[20], tat[20], i, n, quantum, remaining[20];
+    float wtavg = 0, tatavg = 0;
+  
     printf("\nEnter the number of processes -- ");
     scanf("%d", &n);
-
-    for(i = 0; i < n; i++) {
+    for(i=0; i<n; i++)
+    {
         printf("\nEnter Burst Time for Process %d -- ", i);
         scanf("%d", &bt[i]);
+        remaining[i] = bt[i]; // Copy burst times to remaining array
     }
-
-    wt[0] = 0;  // First process has 0 waiting time
-    tat[0] = bt[0];  // Turnaround time of the first process is its burst time
-
-    for(i = 1; i < n; i++) {
-        wt[i] = wt[i - 1] + bt[i - 1];  // Waiting time for subsequent processes
-        tat[i] = tat[i - 1] + bt[i];  // Turnaround time for subsequent processes
-        wtavg += wt[i];  // Add to the total waiting time
-        tatavg += tat[i];  // Add to the total turnaround time
+    printf("\nEnter Time Quantum -- ");
+    scanf("%d", &quantum);
+    
+    // Simulate Round Robin Scheduling
+    int time = 0; // Current time
+    int done = 0; // Number of processes completed
+    while(done < n)
+    {
+        for(i=0; i<n; i++)
+        {
+            if(remaining[i] > 0)
+            {
+                if(remaining[i] > quantum)
+                {
+                    time += quantum;
+                    remaining[i] -= quantum;
+                }
+                else
+                {
+                    time += remaining[i];
+                    wt[i] = time - bt[i]; // Waiting time = Completion time - Burst time
+                    remaining[i] = 0;
+                    done++;
+                }
+            }
+        }
     }
-
-    // Print the results
-    printf("\n\tPROCESS\tBURST TIME\tWAITING TIME\tTURNAROUND TIME\n");
-    for(i = 0; i < n; i++) {
-        printf("\tP%d\t\t%d\t\t%d\t\t%d\n", i, bt[i], wt[i], tat[i]);
+    
+    // Calculate Turnaround Time and averages
+    for(i=0; i<n; i++)
+    {
+        tat[i] = bt[i] + wt[i];
+        wtavg += wt[i];
+        tatavg += tat[i];
     }
-
-    printf("\nAverage Waiting Time -- %.2f", wtavg / n);
-    printf("\nAverage Turnaround Time -- %.2f", tatavg / n);
-
-    return 0;
+    
+    printf("\t PROCESS \tBURST TIME \t WAITING TIME\t TURNAROUND TIME\n");
+    for(i=0; i<n; i++)
+        printf("\n\t P%d \t\t %d \t\t %d \t\t %d", i, bt[i], wt[i], tat[i]);
+    printf("\nAverage Waiting Time -- %f", wtavg/n);
+    printf("\nAverage Turnaround Time -- %f", tatavg/n);
+   return 0;
 }
